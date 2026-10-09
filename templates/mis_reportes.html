@@ -1,0 +1,47 @@
+<!-- templates/mis_reportes.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mis Reportes</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <h2>📋 Mis Reportes</h2>
+  <table border="1" style="width:100%; text-align:center;">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Ubicación</th>
+        <th>Tipo</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody id="tabla-reportes">
+      <!-- Aquí se llenarán los reportes vía JS -->
+    </tbody>
+  </table>
+
+  <script>
+    async function cargarReportes() {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/mis-reportes", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const data = await res.json();
+      const tbody = document.getElementById("tabla-reportes");
+      tbody.innerHTML = "";
+      data.forEach(r => {
+        const fila = `<tr>
+          <td>${r.fecha}</td>
+          <td>${r.ubicacion}</td>
+          <td>${r.tipo}</td>
+          <td>${r.estado || "Pendiente"}</td>
+        </tr>`;
+        tbody.innerHTML += fila;
+      });
+    }
+    cargarReportes();
+  </script>
+</body>
+</html>

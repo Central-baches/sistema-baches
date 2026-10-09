@@ -1,0 +1,56 @@
+<!-- templates/perfil.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Perfil de Usuario</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <h2>👤 Mi Perfil</h2>
+  <form id="perfil-form">
+    <label>Nombre:</label><br>
+    <input type="text" id="nombre"><br>
+    <label>Email:</label><br>
+    <input type="email" id="email" disabled><br>
+    <label>Contraseña:</label><br>
+    <input type="password" id="password"><br><br>
+    <button type="submit">Actualizar</button>
+  </form>
+
+  <p id="mensaje"></p>
+
+  <script>
+    async function cargarPerfil() {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/auth/me", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const usuario = await res.json();
+      document.getElementById("nombre").value = usuario.nombre;
+      document.getElementById("email").value = usuario.email;
+    }
+
+    document.getElementById("perfil-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const token = localStorage.getItem("token");
+      const datos = {
+        nombre: document.getElementById("nombre").value,
+        password: document.getElementById("password").value
+      };
+      const res = await fetch("/api/actualizar-perfil", {
+        method: "PUT",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(datos)
+      });
+      const resultado = await res.json();
+      document.getElementById("mensaje").textContent = resultado.mensaje || resultado.detail;
+    });
+
+    cargarPerfil();
+  </script>
+</body>
+</html>

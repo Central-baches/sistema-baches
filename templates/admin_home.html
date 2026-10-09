@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Panel de Administración</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <style>
+    nav {
+      background-color: #333;
+      padding: 10px;
+    }
+    nav a {
+      color: white;
+      margin-right: 20px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/admin-panel">📋 Ver Reportes</a>
+    <a href="/admin-usuarios">👥 Gestionar Usuarios</a>
+    <a href="/admin-dashboard">📊 Ver Estadísticas</a>
+    <a href="/admin/reportes/exportar">📤 Exportar Reportes</a>
+    <a href="/logout">🔒 Cerrar Sesión</a>
+  </nav>
+
+  <div class="container">
+    <h2>Bienvenido al Panel de Administración</h2>
+    <p>Selecciona una opción del menú para comenzar.</p>
+  </div>
+</body>
+</html>

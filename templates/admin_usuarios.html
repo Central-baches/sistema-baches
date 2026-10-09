@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestión de Usuarios</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h2>Gestión de Usuarios</h2>
+    <p id="mensaje"></p>
+
+    <table id="tablaUsuarios">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+    const rol = localStorage.getItem("rol");
+    const mensaje = document.getElementById("mensaje");
+
+    async function cargarUsuarios() {
+      const res = await fetch("/admin/usuarios", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+
+      if (!res.ok) {
+        mensaje.textContent = "❌ Error al cargar usuarios.";
+        return;
+      }
+
+      const usuarios = await res.json();
+      const tbody = document.querySelector("#tablaUsuarios tbody");
+      tbody.innerHTML = "";
+
+      usuarios.forEach(u => {
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+          <td>${u.id}</td>
+          <td>${u.nombre}</td>
+          <td>${u.email}</td>
+          <td>${u.rol}</td>
+          <td>
+            <button onclick="eliminar(${u.id})">🗑️ Eliminar</button>
+          </td>
+        `;
+        tbody.appendChild(fila);
+      });
+    }
+
+    async function eliminar(id) {
+      if (!confirm("¿Eliminar este usuario?")) return;
+
+      const res = await fetch(`/admin/usuarios/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": "Bearer " + token }
+      });
+
+      if (res.ok) {
+        alert("✅ Usuario eliminado");
+        cargarUsuarios();
+      } else {
+        alert("❌ Error al eliminar");
+      }
+    }
+
+    if (rol === "admin") {
+      cargarUsuarios();
+    } else {
+      mensaje.textContent = "❌ Acceso denegado. Solo administradores pueden ver esta página.";
+      document.getElementById("tablaUsuarios").style.display = "none";
+    }
+  </script>
+</body>
+</html>

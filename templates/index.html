@@ -1,0 +1,291 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Detector de Baches</title>
+
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>Detector de Baches</h1>
+
+    <p>
+      Sube una imagen para detectar baches y registrar
+      su ubicación geográfica.
+    </p>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+
+      <label for="fileInput">
+        Selecciona una imagen de la carretera:
+      </label>
+
+      <input
+        type="file"
+        name="file"
+        id="fileInput"
+        accept="image/*"
+        required
+      />
+
+      <button type="submit" id="detectButton">
+        Detectar bache
+      </button>
+
+    </form>
+
+    <div id="result" aria-live="polite"></div>
+
+  </div>
+
+  <script>
+    const form = document.getElementById("uploadForm");
+    const result = document.getElementById("result");
+    const fileInput = document.getElementById("fileInput");
+    const detectButton = document.getElementById("detectButton");
+
+    // =====================================================
+    // Mostrar mensajes de manera segura
+    // =====================================================
+    function mostrarMensaje(mensaje, error = false) {
+      result.replaceChildren();
+
+      const parrafo = document.createElement("p");
+      parrafo.textContent = mensaje;
+
+      if (error) {
+        parrafo.style.color = "red";
+      }
+
+      result.appendChild(parrafo);
+    }
+
+    // =====================================================
+    // Obtener ubicación geográfica del dispositivo
+    // =====================================================
+    function obtenerUbicacion() {
+      return new Promise((resolve, reject) => {
+
+        if (!window.isSecureContext) {
+          reject(new Error(
+            "La geolocalización requiere HTTPS o localhost. " +
+            "Si estás usando tu celular, abre la aplicación " +
+            "mediante una conexión HTTPS."
+          ));
+          return;
+        }
+
+        if (!navigator.geolocation) {
+          reject(new Error(
+            "Tu navegador no admite geolocalización."
+          ));
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+
+          (position) => {
+
+            const latitud = position.coords.latitude;
+            const longitud = position.coords.longitude;
+            const precision = position.coords.accuracy;
+
+            resolve({
+              latitud,
+              longitud,
+              precision
+            });
+
+          },
+
+          (error) => {
+
+            let mensaje;
+
+            switch (error.code) {
+
+              case error.PERMISSION_DENIED:
+                mensaje =
+                  "No se concedió permiso para acceder a la ubicación. " +
+                  "Activa el permiso de ubicación en tu navegador.";
+                break;
+
+              case error.POSITION_UNAVAILABLE:
+                mensaje =
+                  "No se pudo determinar tu ubicación. " +
+                  "Comprueba el GPS y los servicios de ubicación.";
+                break;
+
+              case error.TIMEOUT:
+                mensaje =
+                  "Se agotó el tiempo para obtener tu ubicación. " +
+                  "Inténtalo nuevamente en un lugar con mejor señal.";
+                break;
+
+              default:
+                mensaje =
+                  "Ocurrió un error al obtener la ubicación.";
+            }
+
+            reject(new Error(mensaje));
+
+          },
+
+          {
+            enableHighAccuracy: true,
+            timeout: 20000,
+            maximumAge: 0
+          }
+
+        );
+      });
+    }
+
+    // =====================================================
+    // Enviar imagen y coordenadas al backend
+    // =====================================================
+    form.addEventListener("submit", async (event) => {
+
+      event.preventDefault();
+
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        mostrarMensaje(
+          "Debes iniciar sesión para enviar el reporte.",
+          true
+        );
+        return;
+      }
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        mostrarMensaje(
+          "Selecciona una imagen antes de continuar.",
+          true
+        );
+        return;
+      }
+
+      detectButton.disabled = true;
+
+      try {
+
+        // 1. Obtener ubicación
+        mostrarMensaje(
+          "Solicitando ubicación geográfica del dispositivo..."
+        );
+
+        const gps = await obtenerUbicacion();
+
+        console.log("Latitud:", gps.latitud);
+        console.log("Longitud:", gps.longitud);
+        console.log("Precisión:", gps.precision, "metros");
+
+        // 2. Preparar imagen y coordenadas
+        const formData = new FormData(form);
+
+        formData.append("latitud", String(gps.latitud));
+        formData.append("longitud", String(gps.longitud));
+        formData.append("precision", String(gps.precision));
+
+        // 3. Enviar al backend
+        mostrarMensaje(
+          "Ubicación obtenida. Analizando imagen y guardando reporte..."
+        );
+
+        const response = await fetch("/api/detect-bache", {
+
+          method: "POST",
+
+          headers: {
+            "Authorization": "Bearer " + token
+          },
+
+          body: formData
+
+        });
+
+        // Comprobar que la respuesta sea JSON
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.detail || "No fue posible procesar el reporte."
+          );
+        }
+
+        // 4. Mostrar resultado
+        result.replaceChildren();
+
+        const titulo = document.createElement("h3");
+        titulo.textContent = "Resultado de la detección";
+
+        const tipo = document.createElement("p");
+        tipo.textContent = "Tipo de bache: " + data.tipo;
+
+        const fecha = document.createElement("p");
+        fecha.textContent = "Fecha y hora: " + data.fecha_hora;
+
+        const latitud = document.createElement("p");
+        latitud.textContent = "Latitud: " + data.latitud;
+
+        const longitud = document.createElement("p");
+        longitud.textContent = "Longitud: " + data.longitud;
+
+        const precision = document.createElement("p");
+        precision.textContent =
+          "Precisión estimada: " + data.precision + " metros";
+
+        const ubicacion = document.createElement("p");
+        ubicacion.textContent = "Ubicación registrada: " + data.ubicacion;
+
+        const mapa = document.createElement("a");
+
+        mapa.href =
+          "https://www.google.com/maps?q=" +
+          encodeURIComponent(data.latitud) + "," +
+          encodeURIComponent(data.longitud);
+
+        mapa.textContent = "Ver ubicación en Google Maps";
+        mapa.target = "_blank";
+        mapa.rel = "noopener noreferrer";
+
+        result.append(
+          titulo,
+          tipo,
+          fecha,
+          latitud,
+          longitud,
+          precision,
+          ubicacion,
+          mapa
+        );
+
+      } catch (error) {
+
+        console.error("Error al registrar el bache:", error);
+
+        mostrarMensaje(
+          error.message || "Ocurrió un error inesperado.",
+          true
+        );
+
+      } finally {
+
+        detectButton.disabled = false;
+
+      }
+
+    });
+  </script>
+
+</body>
+</html>

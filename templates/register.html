@@ -1,0 +1,44 @@
+<!-- templates/register.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Usuario</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h2>Registro de Usuario</h2>
+    <form id="registro-form">
+        <label>Nombre:</label><br>
+        <input type="text" name="nombre" required><br>
+        <label>Email:</label><br>
+        <input type="email" name="email" required><br>
+        <label>Contraseña:</label><br>
+        <input type="password" name="password" required><br><br>
+        <button type="submit">Registrarse</button>
+    </form>
+
+    <p id="mensaje"></p>
+
+    <script>
+        document.getElementById("registro-form").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const datos = {
+                nombre: form.nombre.value,
+                email: form.email.value,
+                password: form.password.value
+            };
+
+            const res = await fetch("/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(datos)
+            });
+
+            const resultado = await res.json();
+            document.getElementById("mensaje").textContent = resultado.mensaje || resultado.detail;
+        });
+    </script>
+</body>
+</html>

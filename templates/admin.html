@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Panel de Administración</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h2>Panel de Administración</h2>
+    <p id="mensaje"></p>
+
+    <table id="tablaReportes">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tipo</th>
+          <th>Fecha</th>
+          <th>Ubicación</th>
+          <th>Usuario</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+    const rol = localStorage.getItem("rol");
+    const mensaje = document.getElementById("mensaje");
+
+    async function cargarReportes() {
+      const res = await fetch("/admin/reportes", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+
+      if (!res.ok) {
+        mensaje.textContent = "❌ Error al cargar reportes.";
+        return;
+      }
+
+      const reportes = await res.json();
+      console.log(reportes); // ← para depurar en consola
+
+      const tbody = document.querySelector("#tablaReportes tbody");
+      tbody.innerHTML = "";
+
+      reportes.forEach(r => {
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+          <td>${r.id}</td>
+          <td>${r.tipo}</td>
+          <td>${new Date(r.fecha).toLocaleString()}</td>
+          <td>${r.ubicacion}</td>
+          <td>${r.usuario_nombre || "Desconocido"}</td>
+          <td>
+            <button onclick="eliminar(${r.id})">🗑️ Eliminar</button>
+          </td>
+        `;
+        tbody.appendChild(fila);
+      });
+    }
+
+    async function eliminar(id) {
+      if (!confirm("¿Eliminar este reporte?")) return;
+
+      const res = await fetch(`/admin/reportes/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": "Bearer " + token }
+      });
+
+      if (res.ok) {
+        alert("✅ Reporte eliminado");
+        cargarReportes();
+      } else {
+        alert("❌ Error al eliminar");
+      }
+    }
+
+    // Solo carga reportes si el rol es admin
+    if (rol === "admin") {
+      cargarReportes();
+    } else {
+      mensaje.textContent = "❌ Acceso denegado. Solo administradores pueden ver esta página.";
+      document.getElementById("tablaReportes").style.display = "none";
+    }
+  </script>
+</body>
+</html>

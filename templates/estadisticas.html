@@ -1,0 +1,34 @@
+<!-- templates/estadisticas.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Estadísticas</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h2>📊 Estadísticas Generales</h2>
+  <canvas id="grafica"></canvas>
+
+  <script>
+    async function cargarEstadisticas() {
+      const res = await fetch("/api/estadisticas");
+      const data = await res.json();
+
+      new Chart(document.getElementById("grafica"), {
+        type: "bar",
+        data: {
+          labels: data.zonas,
+          datasets: [{
+            label: "Baches reportados",
+            data: data.cantidad,
+            backgroundColor: "rgba(75, 192, 192, 0.6)"
+          }]
+        }
+      });
+    }
+    cargarEstadisticas();
+  </script>
+</body>
+</html>
