@@ -1,4 +1,3 @@
-
 # main.py
 
 from fastapi import (
@@ -133,22 +132,12 @@ async def index_page(request: Request):
 
 @app.get("/mis-reportes", response_class=HTMLResponse)
 async def mis_reportes(
-    request: Request,
-    db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    request: Request
 ):
-    reportes = (
-        db.query(Reporte)
-        .filter(Reporte.usuario_id == current_user.id)
-        .all()
-    )
-
     return templates.TemplateResponse(
         "mis_reportes.html",
         {
-            "request": request,
-            "reportes": reportes,
-            "usuario": current_user
+            "request": request
         }
     )
 

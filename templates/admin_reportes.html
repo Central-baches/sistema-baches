@@ -1,0 +1,152 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exportar reportes</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e8eef7, #f5f7fb);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .panel {
+            width: 100%;
+            max-width: 750px;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.10);
+            text-align: center;
+        }
+
+        .icono {
+            font-size: 55px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #183153;
+            font-size: 30px;
+            margin-bottom: 12px;
+        }
+
+        .descripcion {
+            color: #697586;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .informacion {
+            background: #f3f6fa;
+            border: 1px solid #e0e7ef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 28px;
+            text-align: left;
+        }
+
+        .informacion h2 {
+            font-size: 18px;
+            color: #183153;
+            margin-bottom: 12px;
+        }
+
+        .informacion p {
+            color: #586579;
+            line-height: 1.9;
+            font-size: 15px;
+        }
+
+        .boton {
+            display: inline-block;
+            background: #198754;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .boton:hover {
+            background: #146c43;
+            transform: translateY(-2px);
+        }
+
+        .nota {
+            margin-top: 20px;
+            color: #7b8491;
+            font-size: 13px;
+        }
+
+        @media (max-width: 500px) {
+            .panel {
+                padding: 25px 18px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .boton {
+                width: 100%;
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="panel">
+
+        <div class="icono">📊</div>
+
+        <h1>Exportación de reportes</h1>
+
+        <p class="descripcion">
+            Desde este apartado puedes descargar los reportes
+            registrados en el sistema para consultarlos y analizarlos.
+        </p>
+
+        <section class="informacion">
+            <h2>Información del archivo</h2>
+
+            <p>📄 Formato: CSV</p>
+            <p>📋 Datos incluidos: ID, tipo, fecha, ubicación y usuario</p>
+            <p>📁 Nombre del archivo: reportes.csv</p>
+            <p>📈 Compatible con Microsoft Excel y otras hojas de cálculo</p>
+        </section>
+
+        <a
+            href="/admin/admin_reportes/csv"
+            class="boton"
+        >
+            ⬇ Descargar reportes CSV
+        </a>
+
+        <p class="nota">
+            El archivo se genera con los reportes registrados en la base de datos.
+        </p>
+
+    </main>
+
+</body>
+</html>
+```

@@ -105,19 +105,30 @@ def obtener_estadisticas(db: Session = Depends(get_db)):
     }
 
 # ----------- Exportación de reportes a CSV -----------
-@router.get("/reportes/exportar", dependencies=[Depends(verificar_admin)])
+@router.get("/admin_reportes/csv", dependencies=[Depends(verificar_admin)])
 def exportar_reportes_csv(db: Session = Depends(get_db)):
     reportes = db.query(Reporte).all()
+
     buffer = io.StringIO()
     writer = csv.writer(buffer)
+
     writer.writerow(["ID", "Tipo", "Fecha", "Ubicación", "Usuario"])
+
     for r in reportes:
         writer.writerow([
             r.id,
             r.tipo,
-            r.fecha.strftime("%Y-%m-%d %H:%M:%S"),
+            r.fecha.strftime("%Y-%m-%d %H:%M:%S") if r.fecha else "",
             r.ubicacion,
             r.usuario.nombre if r.usuario else "Desconocido"
         ])
+
     buffer.seek(0)
-    return StreamingResponse(buffer, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=reportes.csv"})
+
+    return StreamingResponse(
+        iter([buffer.getvalue()]),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": "attachment; filename=reportes.csv"
+        }
+    )

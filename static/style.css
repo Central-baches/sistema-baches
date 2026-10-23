@@ -1,18 +1,16 @@
+
 body {
   font-family: Arial, sans-serif;
-  background-color: #f1f1f1;
   margin: 0;
   padding: 20px;
+
+  background-image: url("/static/fondo.jpeg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
-.container {
-  max-width: 500px;
-  margin: auto;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.1);
-}
 
 h1 {
   text-align: center;
@@ -21,7 +19,7 @@ h1 {
 button {
   margin-top: 10px;
   padding: 10px 15px;
-  background: #007bff;
+  background: #000000;
   color: white;
   border: none;
   border-radius: 5px;

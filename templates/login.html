@@ -1,78 +1,148 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Iniciar sesión</title>
-  <link rel="stylesheet" href="/static/style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar sesión | Detección de Baches</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
-  <div class="container">
-    <h2>Iniciar sesión</h2>
-    <form id="loginForm">
-      <label for="email">Correo electrónico:</label>
-      <input type="email" id="email" required />
 
-      <label for="password">Contraseña:</label>
-      <input type="password" id="password" required />
+<body class="login-page">
 
-      <button type="submit">Ingresar</button>
-    </form>
+  <main class="login-layout">
+    <section class="login-card">
 
-    <p id="mensaje"></p>
-    <p>¿No tienes cuenta? <a href="/register">Regístrate aquí</a></p>
-  </div>
+      <div class="brand-icon" aria-hidden="true">⚠</div>
+
+      <p class="subtitle">SISTEMA DE MONITOREO VIAL</p>
+
+      <h1>Detección de Baches</h1>
+
+      <p class="description">
+        Bienvenido. Inicia sesión para acceder al sistema
+        de detección y seguimiento de baches.
+      </p>
+
+      <form id="loginForm">
+
+        <div class="form-group">
+          <label for="email">Correo electrónico</label>
+          <input
+            type="email"
+            id="email"
+            placeholder="Ingresa tu correo electrónico"
+            autocomplete="username"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input
+            type="password"
+            id="password"
+            placeholder="Ingresa tu contraseña"
+            autocomplete="current-password"
+            required
+          >
+        </div>
+
+        <p id="mensaje" class="mensaje" role="alert"
+           aria-live="polite"></p>
+
+        <button type="submit" id="loginButton">
+          Iniciar sesión
+        </button>
+
+      </form>
+
+      <div class="register">
+        ¿No tienes una cuenta?
+        <a href="/register">Regístrate aquí</a>
+      </div>
+
+      <div class="card-footer">
+        Sistema de detección y reporte de baches
+      </div>
+
+    </section>
+  </main>
 
   <script>
     const form = document.getElementById("loginForm");
     const mensaje = document.getElementById("mensaje");
+    const boton = document.getElementById("loginButton");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
+      mensaje.textContent = "";
+      mensaje.className = "mensaje";
+
       const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
+      const password = document.getElementById("password").value;
+
+      boton.disabled = true;
+      boton.textContent = "Verificando...";
 
       try {
-        // 🔐 Solicitar token
         const res = await fetch("/auth/token", {
           method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ username: email, password: password })
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: new URLSearchParams({
+            username: email,
+            password: password
+          })
         });
 
         if (!res.ok) {
-          mensaje.textContent = "❌ Credenciales incorrectas";
+          mensaje.textContent = "Correo o contraseña incorrectos.";
+          mensaje.classList.add("error");
           return;
         }
 
         const data = await res.json();
         localStorage.setItem("token", data.access_token);
 
-        // 👤 Obtener perfil del usuario
         const perfil = await fetch("/auth/me", {
-          headers: { "Authorization": "Bearer " + data.access_token }
+          headers: {
+            "Authorization": "Bearer " + data.access_token
+          }
         });
 
         if (!perfil.ok) {
-          mensaje.textContent = "❌ Error al obtener perfil";
+          localStorage.removeItem("token");
+          mensaje.textContent = "No se pudo obtener tu perfil.";
+          mensaje.classList.add("error");
           return;
         }
 
         const usuario = await perfil.json();
+
         localStorage.setItem("rol", usuario.rol);
         localStorage.setItem("email", usuario.email);
 
-        // 🚀 Redirigir según el rol
         if (usuario.rol === "admin") {
-          window.location.href = "/admin-home"; // ← redirige al menú principal
+          window.location.href = "/admin-home";
         } else {
-          window.location.href = "/user-home"; // ← vista del usuario normal
+          window.location.href = "/user-home";
         }
+
       } catch (error) {
         console.error("Error en login:", error);
-        mensaje.textContent = "❌ Error de conexión o servidor";
+        mensaje.textContent =
+          "No se pudo conectar con el servidor. Inténtalo nuevamente.";
+        mensaje.classList.add("error");
+
+      } finally {
+        boton.disabled = false;
+        boton.textContent = "Iniciar sesión";
       }
     });
   </script>
+
 </body>
 </html>

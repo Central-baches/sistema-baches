@@ -1,34 +1,126 @@
-<!-- templates/estadisticas.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Estadísticas</title>
   <link rel="stylesheet" href="/static/style.css">
+
+  <style>
+    nav {
+      background-color: #444;
+      padding: 10px;
+    }
+
+    nav a {
+      color: white;
+      margin-right: 20px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      margin: 20px;
+    }
+
+    #mensaje {
+      color: red;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    canvas {
+      max-width: 1000px;
+      max-height: 500px;
+    }
+  </style>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
-  <h2>📊 Estadísticas Generales</h2>
-  <canvas id="grafica"></canvas>
+
+  <nav>
+    <a href="/user-home">📋 Menú Principal</a>
+  </nav>
+
+  <div class="container">
+    <h2>📊 Mis Estadísticas</h2>
+
+    <p id="mensaje"></p>
+
+    <canvas id="grafica"></canvas>
+  </div>
 
   <script>
     async function cargarEstadisticas() {
-      const res = await fetch("/api/estadisticas");
-      const data = await res.json();
 
-      new Chart(document.getElementById("grafica"), {
-        type: "bar",
-        data: {
-          labels: data.zonas,
-          datasets: [{
-            label: "Baches reportados",
-            data: data.cantidad,
-            backgroundColor: "rgba(75, 192, 192, 0.6)"
-          }]
+      const mensaje = document.getElementById("mensaje");
+      const token = localStorage.getItem("token");
+
+      try {
+
+        const res = await fetch("/api/estadisticas", {
+          headers: {
+            "Authorization": "Bearer " + token
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error("No fue posible obtener las estadísticas");
         }
-      });
+
+        const data = await res.json();
+
+        console.log("Datos recibidos:", data);
+
+        if (!data.zonas || data.zonas.length === 0) {
+          mensaje.textContent =
+            "No tienes reportes registrados todavía.";
+          return;
+        }
+
+        const ctx = document.getElementById("grafica");
+
+        new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: data.zonas,
+            datasets: [{
+              label: "Mis reportes",
+              data: data.cantidad,
+              backgroundColor: "rgba(75, 192, 192, 0.6)",
+              borderColor: "rgba(75, 192, 192, 1)",
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  precision: 0
+                }
+              }
+            }
+          }
+        });
+
+      } catch (error) {
+
+        console.error(error);
+
+        mensaje.textContent =
+          "Error al cargar las estadísticas.";
+      }
     }
+
     cargarEstadisticas();
   </script>
+
 </body>
 </html>
